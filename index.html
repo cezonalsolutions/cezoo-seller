@@ -1,0 +1,1083 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+
+<title>Seller Dashboard</title>
+<link
+href="https://fonts.googleapis.com/css2?family=Bungee&display=swap"
+rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+<style>
+
+*{
+  margin:0;
+  padding:0;
+  box-sizing:border-box;
+  font-family:Segoe UI,sans-serif;
+}
+
+body{
+  background:#f6f7fb;
+  padding-bottom:100px;
+}
+
+
+
+.title{
+  font-size:22px;
+  font-weight:800;
+}
+
+.stats{
+  display:grid;
+  grid-template-columns:repeat(2,1fr);
+  gap:12px;
+  padding:16px;
+}
+
+.statCard{
+  background:#fff;
+  border-radius:18px;
+  padding:16px;
+  box-shadow:0 2px 10px rgba(0,0,0,.05);
+}
+
+.statCount{
+  font-size:24px;
+  font-weight:800;
+}
+
+.statLabel{
+  color:#64748b;
+  margin-top:4px;
+}
+
+.container{
+  padding:16px;
+}
+
+.card{
+  background:#fff;
+  border-radius:20px;
+  padding:16px;
+  margin-bottom:16px;
+  box-shadow:0 2px 12px rgba(0,0,0,.05);
+}
+
+.top{
+  display:flex;
+  gap:12px;
+}
+
+.productImg{
+  width:70px;
+  height:70px;
+  object-fit:cover;
+  border-radius:14px;
+  border:1px solid #eee;
+}
+
+.name{
+  font-size:15px;
+  font-weight:800;
+}
+
+.small{
+  font-size:13px;
+  color:#64748b;
+  margin-top:4px;
+}
+
+.price{
+  margin-top:6px;
+  color:#16a34a;
+  font-weight:800;
+}
+
+.badge{
+  display:inline-block;
+  margin-top:10px;
+  padding:6px 12px;
+  border-radius:999px;
+  font-size:12px;
+  font-weight:700;
+  background:#dbeafe;
+  color:#1d4ed8;
+}
+
+.actions{
+  display:flex;
+  gap:10px;
+  margin-top:14px;
+}
+
+.btn{
+  flex:1;
+  height:46px;
+  border:none;
+  border-radius:14px;
+  color:#fff;
+  font-weight:700;
+}
+
+.accept{
+  background:#16a34a;
+}
+
+.packed{
+  background:#2563eb;
+}
+
+.loader{
+  text-align:center;
+  padding:40px;
+}
+.btn:disabled{
+
+  background:#16a34a;
+
+  opacity:1;
+
+  cursor:not-allowed;
+}.header{
+
+  position:sticky;
+  top:0;
+  z-index:100;
+
+  background:#fff;
+
+  padding:20px;
+
+  display:flex;
+
+  justify-content:space-between;
+
+  align-items:center;
+
+  box-shadow:0 2px 12px rgba(0,0,0,.06);
+}
+
+.menuBtn{
+
+  font-size:30px;
+
+  font-weight:bold;
+
+  cursor:pointer;
+}
+
+/* Overlay */
+
+.overlay{
+
+  position:fixed;
+
+  inset:0;
+
+  background:rgba(0,0,0,.4);
+
+  display:none;
+
+  z-index:998;
+}
+
+/* Bottom Sheet */
+
+.bottomSheet{
+
+  position:fixed;
+
+  left:0;
+  right:0;
+  bottom:-100%;
+
+  background:#fff;
+
+  border-radius:24px 24px 0 0;
+
+  padding:20px;
+
+  transition:.35s;
+
+  z-index:999;
+
+  min-height:300px;
+}
+
+.bottomSheet.show{
+
+  bottom:0;
+}
+
+.sheetHandle{
+
+  width:60px;
+
+  height:5px;
+
+  background:#ddd;
+
+  border-radius:999px;
+
+  margin:auto;
+}
+
+.sheetTitle{
+
+  font-size:22px;
+
+  font-weight:800;
+
+  margin:20px 0;
+}
+
+.sheetItem{
+
+  padding:18px 0;
+
+  border-bottom:1px solid #eee;
+
+  font-size:16px;
+
+  font-weight:700;
+
+  cursor:pointer;
+}
+
+.closeSheet{
+
+  width:100%;
+
+  height:50px;
+
+  margin-top:20px;
+
+  border:none;
+
+  border-radius:14px;
+
+  background:#111827;
+
+  color:#fff;
+
+  font-weight:700;
+}
+.logoTitle{
+
+  font-family:'Bungee',cursive;
+
+  font-size:34px;
+
+  color:#16a34a;
+
+  letter-spacing:2px;
+
+  animation:
+  logoDrop .8s ease-out;
+}
+
+.logoSub{
+
+  font-size:10px;
+
+  letter-spacing:3px;
+
+  color:#64748b;
+
+  margin-top:-4px;
+
+  text-transform:uppercase;
+}
+@keyframes logoDrop{
+
+  0%{
+    opacity:0;
+    transform:
+    translateY(-80px)
+    scale(.7);
+  }
+
+  100%{
+    opacity:1;
+    transform:
+    translateY(0)
+    scale(1);
+  }
+}
+/* SPLASH SCREEN */
+
+#splashScreen{
+
+  position:fixed;
+
+  inset:0;
+
+  z-index:999999;
+
+  background:
+  linear-gradient(
+    135deg,
+    #16a34a,
+    #22c55e,
+    #4ade80
+  );
+
+  display:flex;
+
+  align-items:center;
+
+  justify-content:center;
+
+  overflow:hidden;
+}
+
+.splashContent{
+
+  text-align:center;
+}
+
+#splashLogo{
+
+  font-family:'Bungee',cursive;
+
+  font-size:68px;
+
+  color:#fff;
+
+  opacity:0;
+
+  transform:
+  translateY(-140px)
+  scale(.75);
+}
+
+#splashTag{
+
+  color:#fff;
+
+  letter-spacing:3px;
+
+  font-size:12px;
+
+  margin-top:8px;
+
+  opacity:0;
+
+  transform:
+  translateY(15px);
+}
+
+.logoShow{
+
+  animation:
+  logoDrop .8s forwards;
+}
+
+.tagShow{
+
+  animation:
+  tagShow .5s forwards;
+}
+
+.zoomOut{
+
+  animation:
+  zoomOut .45s forwards;
+}
+
+@keyframes logoDrop{
+
+  to{
+
+    opacity:1;
+
+    transform:
+    translateY(0)
+    scale(1);
+  }
+}
+
+@keyframes tagShow{
+
+  to{
+
+    opacity:1;
+
+    transform:
+    translateY(0);
+  }
+}
+
+@keyframes zoomOut{
+
+  to{
+
+    opacity:0;
+
+    transform:
+    scale(8);
+  }
+}
+</style>
+
+</head>
+
+<body>
+    <div id="splashScreen">
+
+  <div class="splashContent">
+
+    <div id="splashLogo">
+      CEZOO
+    </div>
+
+    <div id="splashTag">
+      DELIVERY IN MINUTES
+    </div>
+
+  </div>
+
+</div>
+<div class="header">
+
+ <div class="logoTitle">
+    CEZOO
+  </div>
+
+
+
+
+  <div
+    class="menuBtn"
+    onclick="openSheet()"
+  >
+    ☰
+  </div>
+
+</div>
+
+<div class="stats">
+
+  <div class="statCard">
+    <div class="statCount" id="newCount">0</div>
+    <div class="statLabel">New Orders</div>
+  </div>
+
+  <div class="statCard">
+    <div class="statCount" id="packedCount">0</div>
+    <div class="statLabel">Packed</div>
+  </div>
+
+</div>
+
+<div id="container" class="container">
+  <div class="loader">
+    Loading...
+  </div>
+</div>
+<div
+  class="overlay"
+  id="overlay"
+  onclick="closeSheet()">
+</div>
+
+<div
+  class="bottomSheet"
+  id="bottomSheet">
+
+  <div class="sheetHandle"></div>
+
+  <div class="sheetTitle">
+    Order Filters
+  </div>
+
+  <div
+    class="sheetItem"
+    onclick="showOrders('waiting')">
+    ⏳ Waiting Orders
+  </div>
+
+  <div
+    class="sheetItem"
+    onclick="showOrders('packed')">
+    ✅ Completed Orders
+  </div>
+
+  <div
+    class="sheetItem"
+    onclick="showOrders('all')">
+    📦 All Orders
+  </div>
+
+  <button
+    class="closeSheet"
+    onclick="closeSheet()">
+    Close
+  </button>
+
+</div>
+<script>
+
+const supabaseClient =
+window.supabase.createClient(
+
+  "https://izoipzriynkcjtwuzrfu.supabase.co",
+
+  "sb_publishable_7ZRL1Y4JAppLTJonepuTIw_UQyGjVVw"
+
+);
+window.productMap = {};
+let lastSellerOrderId = null;
+if ("Notification" in window) {
+  Notification.requestPermission();
+}
+const tables = [
+  "all_products",
+  "grocery_products",
+  "fresh_products",
+  "offer_products",
+  "home_products",
+  "cool_drinks_products",
+  "chocolate_products"
+];
+
+async function loadProductMap(){
+
+  for(const table of tables){
+
+    const { data } =
+    await supabaseClient
+    .from(table)
+    .select("*");
+
+    if(!data) continue;
+
+    data.forEach(product=>{
+
+      window.productMap[
+        table + "_" + product.id
+      ] = product;
+
+    });
+
+  }
+
+}
+async function loadSellerOrders(){
+
+  const { data,error } =
+  await supabaseClient
+
+  .from("seller_dash")
+
+  .select("*")
+
+  .order(
+    "id",
+    { ascending:false }
+  );
+
+  if(error){
+    console.log(error);
+    return;
+  }
+
+  window.sellerData = data || [];
+if(data && data.length){
+
+  const newestId = data[0].id;
+
+  if(lastSellerOrderId === null){
+
+    lastSellerOrderId = newestId;
+
+  }else if(newestId > lastSellerOrderId){
+
+    showSellerNotification(
+      data[0]
+    );
+
+    lastSellerOrderId = newestId;
+  }
+
+}
+  document.getElementById(
+    "newCount"
+  ).innerText =
+ sellerData.filter(
+  x =>
+  !x.seller_status ||
+  x.seller_status === "Waiting"
+).length;
+
+  document.getElementById(
+    "packedCount"
+  ).innerText =
+  sellerData.filter(
+    x => x.seller_status === "Packed"
+  ).length;
+
+  const container =
+  document.getElementById(
+    "container"
+  );
+
+ container.innerHTML = "";
+
+let displayOrders = sellerData;
+
+if(currentFilter === "waiting"){
+
+  displayOrders =
+  sellerData.filter(
+    x =>
+    !x.seller_status ||
+    x.seller_status === "Waiting"
+  );
+}
+
+if(currentFilter === "packed"){
+
+  displayOrders =
+  sellerData.filter(
+    x =>
+    x.seller_status === "Packed"
+  );
+}
+
+displayOrders.forEach(order=>{
+const totalItems =
+(order.items || []).reduce(
+  (sum,item)=>
+  sum + Number(item.quantity || 0),
+  0
+);
+  let productsHTML = "";
+
+  (order.items || []).forEach(item=>{
+
+    const key =
+      item.table_name +
+      "_" +
+      item.product_id;
+
+    const product =
+      window.productMap[key];
+
+    if(!product) return;
+
+    productsHTML += `
+
+      <div style="
+        display:flex;
+        gap:10px;
+        margin-top:10px;
+        padding-bottom:10px;
+        border-bottom:1px solid #eee;
+      ">
+
+        <img
+          src="${product.image1}"
+          class="productImg"
+        >
+
+        <div>
+
+          <div class="name">
+  ${product.name}
+</div>
+
+<div class="small">
+  Ordered Qty: ${item.quantity}
+</div>
+
+<div class="small">
+  Pack Size:
+  ${product.quantity || ""}
+  ${product.unit || ""}
+</div>
+
+<div style="
+  margin-top:6px;
+  font-size:14px;
+  font-weight:800;
+  color:#16a34a;
+">
+  ₹${
+    product.discount_price ||
+    product.original_price ||
+    0
+  }
+</div>
+
+${
+  product.original_price
+  ?
+  `
+  <div style="
+    font-size:12px;
+    color:#94a3b8;
+    text-decoration:line-through;
+  ">
+    ₹${product.original_price}
+  </div>
+  `
+  : ""
+}
+
+        </div>
+
+      </div>
+
+    `;
+
+  });
+
+  container.innerHTML += `
+
+    <div class="card">
+
+      <div class="name">
+        Order #${order.order_id}
+      </div>
+
+      ${productsHTML}
+
+      <div class="small"
+        style="margin-top:12px;">
+        👤 ${order.customer_name || "-"}
+      </div>
+
+      <div class="small">
+        📞 ${order.mobile || "-"}
+      </div>
+
+      <div class="small">
+        📍 ${order.address || "-"}
+      </div>
+
+     <div style="
+  margin-top:10px;
+  padding:10px;
+  background:#f8fafc;
+  border-radius:12px;
+">
+
+  <div class="small">
+    📦 Total Items:
+    <b>${totalItems}</b>
+  </div>
+
+  <div class="price">
+    ₹${order.total_price || 0}
+  </div>
+
+</div>
+
+      <div class="badge">
+        ${order.seller_status || "Waiting"}
+      </div>
+
+      <div class="actions">
+
+        <button
+          class="btn packed"
+          ${
+            order.seller_status === "Packed"
+            ? "disabled"
+            : `onclick="
+                updateStatus(
+                  ${order.id},
+                  'Packed'
+                )
+              "`
+          }
+        >
+          ${
+            order.seller_status === "Packed"
+            ? "Completed"
+            : "Packed"
+          }
+        </button>
+
+      </div>
+
+    </div>
+
+  `;
+
+});
+}
+function showToast(message){
+
+  const toast =
+  document.createElement("div");
+
+  toast.style.cssText = `
+    position:fixed;
+    left:20px;
+    right:20px;
+    bottom:-100px;
+    background:#16a34a;
+    color:#fff;
+    padding:16px;
+    border-radius:16px;
+    text-align:center;
+    font-weight:700;
+    z-index:999999;
+    transition:.3s;
+    box-shadow:0 8px 20px rgba(0,0,0,.2);
+  `;
+
+  toast.innerText = message;
+
+  document.body.appendChild(toast);
+
+  setTimeout(()=>{
+
+    toast.style.bottom = "20px";
+
+  },50);
+
+  setTimeout(()=>{
+
+    toast.style.bottom = "-100px";
+
+  },2000);
+
+  setTimeout(()=>{
+
+    toast.remove();
+
+  },2400);
+
+}
+async function updateStatus(
+  id,
+  status
+){
+
+  const { error } =
+  await supabaseClient
+
+  .from("seller_dash")
+
+  .update({
+
+    seller_status:status
+
+  })
+
+  .eq("id",id);
+
+  if(error){
+
+   showToast(
+  " Update Failed"
+);
+
+    return;
+  }
+
+ showToast(
+  "Order Packed Successfully"
+);
+
+loadSellerOrders();
+
+}
+
+async function start(){
+
+  await loadProductMap();
+
+  await loadSellerOrders();
+
+}
+let currentFilter = "waiting";
+function openSheet(){
+
+  document
+  .getElementById("bottomSheet")
+  .classList.add("show");
+
+  document
+  .getElementById("overlay")
+  .style.display = "block";
+}
+
+function closeSheet(){
+
+  document
+  .getElementById("bottomSheet")
+  .classList.remove("show");
+
+  document
+  .getElementById("overlay")
+  .style.display = "none";
+}
+
+function showOrders(type){
+
+  currentFilter = type;
+
+  closeSheet();
+
+  loadSellerOrders();
+}
+function showSellerNotification(order){
+
+  // Browser notification
+
+  if(Notification.permission === "granted"){
+
+    new Notification(
+      "🛒 New Seller Order",
+      {
+body:
+`Order #${order.order_id} | ${order.items?.reduce((s,i)=>s+Number(i.quantity||0),0)} Items | ₹${order.total_price}`
+      }
+    );
+
+  }
+
+  // Sound
+
+  const audio = new Audio(
+    "https://actions.google.com/sounds/v1/cartoon/clang_and_wobble.ogg"
+  );
+
+  audio.play().catch(()=>{});
+
+  // Bottom popup
+
+  const box =
+  document.createElement("div");
+
+  box.style.cssText = `
+    position:fixed;
+    bottom:20px;
+    left:20px;
+    right:20px;
+    background:#111827;
+    color:#fff;
+    padding:16px;
+    border-radius:18px;
+    z-index:99999;
+  `;
+
+  box.innerHTML = `
+    <div style="font-weight:800">
+      🛒 New Order Received
+    </div>
+
+    <div style="margin-top:6px">
+      Order #${order.order_id}
+    </div>
+
+    <div>
+  📦 Items:
+  ${
+    (order.items || [])
+    .reduce(
+      (sum,item)=>
+      sum + Number(item.quantity || 0),
+      0
+    )
+  }
+</div>
+
+<div>
+  💰 Amount:
+  ₹${order.total_price}
+</div>
+  `;
+
+  document.body.appendChild(box);
+
+  setTimeout(()=>{
+    box.remove();
+  },10000);
+}
+function startSplash(){
+
+  const logo =
+  document.getElementById(
+    "splashLogo"
+  );
+
+  const tag =
+  document.getElementById(
+    "splashTag"
+  );
+
+  const splash =
+  document.getElementById(
+    "splashScreen"
+  );
+
+  // Logo animation
+
+  logo.classList.add(
+    "logoShow"
+  );
+
+  // Show tagline
+
+  setTimeout(()=>{
+
+    tag.classList.add(
+      "tagShow"
+    );
+
+  },600);
+
+  // Fade whole splash
+
+  setTimeout(()=>{
+
+    splash.style.transition =
+    "opacity .4s ease";
+
+    splash.style.opacity =
+    "0";
+
+  },2200);
+
+  // Remove splash
+
+  setTimeout(()=>{
+
+    splash.remove();
+
+  },2600);
+
+}
+
+// Start splash
+
+startSplash();
+
+// Start dashboard after splash
+
+setTimeout(()=>{
+
+  start();
+
+},2600);
+
+// Auto refresh orders
+
+setInterval(() => {
+
+  loadSellerOrders();
+
+},5000);
+</script>
+
+</body>
+</html>
